@@ -1,5 +1,5 @@
 /* global describe, it, expect, sinon */
-import { isObject, logger, nextUniqueId } from '../../src/utils/generic';
+import { isObject, forOwn, logger, nextUniqueId } from '../../src/utils/generic';
 
 describe('Generic Utilities', () => {
 
@@ -23,6 +23,39 @@ describe('Generic Utilities', () => {
 		it('should return false when passed null', () => {
 			const result = isObject(null);
 			expect(result).to.be.false;
+		});
+	});
+
+	describe('forOwn()', () => {
+
+		let fixture;
+
+		before('initialize fixture', () => {
+			fixture = {
+				foo: 'bar',
+				baz: 'bun',
+			};
+		});
+
+		it('should invoke callback for each property', () => {
+			const spy = sinon.spy();
+			forOwn(fixture, spy);
+			expect(spy).to.have.been.calledTwice;
+		});
+
+		it('should ignore properties on the prototype chain', () => {
+			fixture.__proto__ = { bif: 'baff' };
+			const spy = sinon.spy();
+			forOwn(fixture, spy);
+			expect(spy).to.have.been.calledTwice;
+		});
+
+		it('should output to log when not passed an object literal', () => {
+			const spy = sinon.spy();
+			const stub = sinon.stub(console, 'log', spy);
+			forOwn(null, () => {});
+			stub.restore();
+			expect(spy).to.have.been.called;
 		});
 	});
 
